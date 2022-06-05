@@ -1,5 +1,8 @@
 package com.domain.logic.with.streams;
 
+import com.composite.Velocity;
+
+import javax.xml.bind.ValidationEventLocator;
 import java.time.Duration;
 import java.util.List;
 
@@ -15,5 +18,9 @@ public interface Painter {
      */
     static PaintersStream stream(List<Painter> painters) {
         return new PaintersStream(painters.stream());
+    }
+
+    default Velocity estimateVelocity(double sqMeters) {
+        return new Velocity(sqMeters, this.estimateTimeToPaint(sqMeters));
     }
 }
