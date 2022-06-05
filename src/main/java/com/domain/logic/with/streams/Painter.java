@@ -5,10 +5,13 @@ import com.composite.Velocity;
 import javax.xml.bind.ValidationEventLocator;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 public interface Painter {
 
-    boolean isAvailable();
+    // this method should not exist in this interface, it is not object oriented - should be replaced by available method
+//    boolean isAvailable();
+    Optional<Painter> available();
     Duration estimateTimeToPaint(double sqMeters);
     Money estimateCompensation(double sqMeters);
     String getName();

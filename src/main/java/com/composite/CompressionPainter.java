@@ -3,7 +3,9 @@ package com.composite;
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
 
+import javax.swing.text.html.Option;
 import java.time.Duration;
+import java.util.Optional;
 
 public class CompressionPainter implements Painter {
 
@@ -26,8 +28,8 @@ public class CompressionPainter implements Painter {
 
 
     @Override
-    public boolean isAvailable() {
-        return true;
+    public Optional<Painter> available() {
+        return Optional.of(this);
     }
 
     @Override

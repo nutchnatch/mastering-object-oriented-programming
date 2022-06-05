@@ -5,8 +5,11 @@ import com.domain.logic.with.streams.Painter;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Optional;
+
 
 /**
  * Aggregates information of many painters
@@ -17,13 +20,40 @@ import java.util.stream.Stream;
 public class CompositePainter implements Painter {
     private List<Painter> painters;
 
-    public CompositePainter(List<Painter> painters) {
+    /**
+     * A CompositePainter should never be created without a list of painters
+     * Should not be allowed
+     * CompositePainter should not be public, but private
+     * The caller should only get an Optional CompositePainter
+     * @param painters
+     */
+//    public CompositePainter(List<Painter> painters) {
+    private CompositePainter(List<Painter> painters) {
         this.painters = painters;
     }
 
+    public static Optional<CompositePainter> of(List<Painter> painters) {
+        return painters.isEmpty()
+                ? Optional.empty()
+                : Optional.of(new CompositePainter(painters));
+
+    }
+
+    /**
+     * Returning a boolean is a problem, since this method is telling the caller how to implement a varying feature.
+     * It should offer a polymorphic service instead (for ex, available)
+     * @return
+     */
+//    @Override
+//    public boolean isAvailable() {
+//        return Painter.stream(this.painters).anyMatch(Painter::isAvailable);
+//    }
+
     @Override
-    public boolean isAvailable() {
-        return Painter.stream(this.painters).anyMatch(Painter::isAvailable);
+    public Optional<Painter> available() {
+        return CompositePainter.of(
+            Painter.stream(this.painters).available().collect(Collectors.toList())
+        ).map(Function.identity());
     }
 
     @Override
@@ -31,9 +61,16 @@ public class CompositePainter implements Painter {
         return this.estimateTimeToPaint(sqMeters, this.estimateTotalVelocity(sqMeters));
     }
 
+    /**
+     * This method should be deterministic, as supposed to be, should not return Optional
+     * Because we know that CompositePainter is not create with empty list of painters
+     * @param sqMeters
+     * @param totalVelocity
+     * @return
+     */
+//    private Optional<Duration> estimateTimeToPaint(double sqMeters, Velocity totalVelocity) {
     private Duration estimateTimeToPaint(double sqMeters, Velocity totalVelocity) {
         return  Painter.stream(this.painters)
-                .available()
                 .map(painter -> painter.estimateTimeToPaint(
                     sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
                 .max(Duration::compareTo)
@@ -47,7 +84,6 @@ public class CompositePainter implements Painter {
 
     private Money estimateCompensation(double sqMeters, Velocity totalVelocity) {
         return Painter.stream(this.painters)
-                .available()
                 .map(painter -> painter.estimateCompensation(
                         sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
                 .reduce(Money::add)
@@ -55,7 +91,7 @@ public class CompositePainter implements Painter {
     }
 
     private Velocity estimateTotalVelocity(double sqMeters) {
-        return Painter.stream(painters).available()
+        return Painter.stream(painters)
                         .map(painter -> painter.estimateVelocity(sqMeters))
                         .reduce(Velocity::add)
                         .orElse(Velocity.ZERO);

@@ -20,13 +20,13 @@ public class Demo {
         Money lowestCost = Money.ZERO;
         Painter winner = null;
         for(Painter candidate: painters) {
-            if(candidate.isAvailable()) {
+//            if(candidate.isAvailable()) {
                 Money cost = candidate.estimateCompensation(sqMeters);
                 if(winner == null || cost.compareTo(lowestCost) <= 0) {
                     winner = candidate;
                     lowestCost = cost;
                 }
-            }
+//            }
         }
         return winner;
     }
@@ -42,7 +42,7 @@ public class Demo {
     private static Optional<Painter> findCheapest2(double sqMeters, List<Painter> painters) {
         //promise that on object appears one after another. Then we tell the stream what do to with the object
         return painters.stream()
-                .filter(Painter::isAvailable)
+//                .filter(Painter::isAvailable)
 //                .sorted(Comparator.comparing(painter -> painter.estimateCompensation(sqMeters)))  // same as min, but less performant (O(n) + logn)
 //                .findFirst()
                 .min(Comparator.comparing(painter -> painter.estimateCompensation(sqMeters))); // -> this is called Aggregation Function
@@ -65,7 +65,7 @@ public class Demo {
 
     private static Money getTotalCost(double sqMeters, List<Painter> painters) {
         return painters.stream()
-                .filter(Painter::isAvailable)
+//                .filter(Painter::isAvailable)
                 //Money.ZERO - start; (acc, painter) -> painter.estimateCompensation(sqMeters).add(acc) - aggregator function; Money::add - Acumulator
 //                .reduce(Money.ZERO, (acc, painter) -> painter.estimateCompensation(sqMeters).add(acc), Money::add);
                 .map(painter -> painter.estimateCompensation(sqMeters))

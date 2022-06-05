@@ -4,6 +4,7 @@ import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
 
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Time proportional to area
@@ -24,13 +25,13 @@ public class ProportionalPainter implements Painter {
     @Override
     public String getName() { return this.name; }
 
-    @Override
-    public boolean isAvailable() {
-        return true;
-    }
-
     private int getSecondsToPaint(double sqMeters) {
         return (int)(sqMeters / this.sqMetersPerHour * 3600);
+    }
+
+    @Override
+    public Optional<Painter> available() {
+        return Optional.of(this);
     }
 
     @Override

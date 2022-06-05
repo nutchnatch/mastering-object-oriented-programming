@@ -24,7 +24,11 @@ public class PaintersStream implements ForwardingStream<Painter> {
      * @return
      */
     public PaintersStream available() {
-        return new PaintersStream(this.getStream().filter(Painter::isAvailable));
+        return new PaintersStream(this.getStream()
+                .map(Painter::available)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+        );
     }
 
     /**
