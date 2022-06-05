@@ -1,6 +1,7 @@
 package com.domain.logic.with.streams;
 
 import com.composite.Velocity;
+import com.composite.WorkAssignment;
 
 import javax.xml.bind.ValidationEventLocator;
 import java.time.Duration;
@@ -15,6 +16,15 @@ public interface Painter {
     Duration estimateTimeToPaint(double sqMeters);
     Money estimateCompensation(double sqMeters);
     String getName();
+
+    /**
+     * Assigns a sqMeters to a painter
+     * @param sqMeters
+     * @return
+     */
+    default WorkAssignment assign(double sqMeters) {
+        return new WorkAssignment(this, sqMeters);
+    }
 
     /**
      * Converts an array of Painters in a concrete PaintersSteam

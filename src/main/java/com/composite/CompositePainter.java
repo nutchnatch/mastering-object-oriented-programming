@@ -2,6 +2,7 @@ package com.composite;
 
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 
 import java.time.Duration;
 import java.util.List;
@@ -58,44 +59,82 @@ public class CompositePainter implements Painter {
 
     @Override
     public Duration estimateTimeToPaint(double sqMeters) {
-        return this.estimateTimeToPaint(sqMeters, this.estimateTotalVelocity(sqMeters));
+        return this.schedule(sqMeters)
+                .map(WorkAssignment::estimateTimeToPaint)
+                .max(Duration::compareTo)
+                .get();
     }
+
+//    @Override
+//    public Duration estimateTimeToPaint(double sqMeters) {
+//        return this.estimateTimeToPaint(sqMeters, this.estimateTotalVelocity(sqMeters));
+//    }
 
     /**
      * This method should be deterministic, as supposed to be, should not return Optional
      * Because we know that CompositePainter is not create with empty list of painters
      * @param sqMeters
-     * @param totalVelocity
+//     * @param totalVelocity
      * @return
      */
 //    private Optional<Duration> estimateTimeToPaint(double sqMeters, Velocity totalVelocity) {
-    private Duration estimateTimeToPaint(double sqMeters, Velocity totalVelocity) {
+//    private Duration estimateTimeToPaint(double sqMeters, Velocity totalVelocity) {
+//        return  Painter.stream(this.painters)
+//                // This algorithm is applicable if we presume constant velocity
+//                // Should be substituted when the assumptions change
+//                // The process of splitting the area into chunks would have to varry
+//                .map(painter -> painter.estimateTimeToPaint(
+//                    sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
+//                .max(Duration::compareTo)
+//                .get();
+//    }
+
+    private Stream<WorkAssignment> schedule(double sqMeters) {
+        return this.schedule(sqMeters, this.estimateTotalVelocity(sqMeters));
+    }
+
+    /**
+     * Cuts the area into sections proportional to individual velocity
+     * @param sqMeters
+     * @param totalVelocity
+     */
+    private Stream<WorkAssignment> schedule(double sqMeters, Velocity totalVelocity) {
         return  Painter.stream(this.painters)
-                .map(painter -> painter.estimateTimeToPaint(
-                    sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
-                .max(Duration::compareTo)
-                .get();
+                .map(painter -> painter.assign(sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)));
+    }
+
+    /**
+     * Calculates the total velocity
+     * @param sqMeters
+     * @return
+     */
+    private Velocity estimateTotalVelocity(double sqMeters) {
+        return Painter.stream(painters)
+                .map(painter -> painter.estimateVelocity(sqMeters))
+                .reduce(Velocity::add)
+                .orElse(Velocity.ZERO);
     }
 
     @Override
     public Money estimateCompensation(double sqMeters) {
-        return this.estimateCompensation(sqMeters, this.estimateTotalVelocity(sqMeters));
-    }
-
-    private Money estimateCompensation(double sqMeters, Velocity totalVelocity) {
-        return Painter.stream(this.painters)
-                .map(painter -> painter.estimateCompensation(
-                        sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
+        return schedule(sqMeters)
+                .map(WorkAssignment::estimateCompensation)
                 .reduce(Money::add)
                 .orElse(Money.ZERO);
     }
 
-    private Velocity estimateTotalVelocity(double sqMeters) {
-        return Painter.stream(painters)
-                        .map(painter -> painter.estimateVelocity(sqMeters))
-                        .reduce(Velocity::add)
-                        .orElse(Velocity.ZERO);
-    }
+//    @Override
+//    public Money estimateCompensation(double sqMeters) {
+//        return this.estimateCompensation(sqMeters, this.estimateTotalVelocity(sqMeters));
+//    }
+//
+//    private Money estimateCompensation(double sqMeters, Velocity totalVelocity) {
+//        return Painter.stream(this.painters)
+//                .map(painter -> painter.estimateCompensation(
+//                        sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)))
+//                .reduce(Money::add)
+//                .orElse(Money.ZERO);
+//    }
 
     @Override
     public String getName() {
