@@ -2,7 +2,6 @@ package com.composite;
 
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 
 import java.time.Duration;
 import java.util.List;
@@ -17,9 +16,11 @@ import java.util.Optional;
  * Composite class map a single call to call contained objects
  * Collects multiple results into a single result
  * It is represented as a single object, with many objects behind
+ * An algorithm that must vary, should be represented by an object
  */
 public class CompositePainter implements Painter {
     private List<Painter> painters;
+    private PaintingScheduler scheduler;
 
     /**
      * A CompositePainter should never be created without a list of painters
@@ -29,14 +30,15 @@ public class CompositePainter implements Painter {
      * @param painters
      */
 //    public CompositePainter(List<Painter> painters) {
-    private CompositePainter(List<Painter> painters) {
+    private CompositePainter(List<Painter> painters, PaintingScheduler scheduler) {
         this.painters = painters;
+        this.scheduler = scheduler;
     }
 
-    public static Optional<CompositePainter> of(List<Painter> painters) {
+    public static Optional<CompositePainter> of(List<Painter> painters, PaintingScheduler scheduler) {
         return painters.isEmpty()
                 ? Optional.empty()
-                : Optional.of(new CompositePainter(painters));
+                : Optional.of(new CompositePainter(painters, scheduler));
 
     }
 
@@ -53,13 +55,18 @@ public class CompositePainter implements Painter {
     @Override
     public Optional<Painter> available() {
         return CompositePainter.of(
-            Painter.stream(this.painters).available().collect(Collectors.toList())
+            Painter.stream(this.painters).available().collect(Collectors.toList()), this.scheduler
         ).map(Function.identity());
     }
 
+    /**
+     * scheduler is the strategy on the strategy patter used on this solution
+     * @param sqMeters
+     * @return
+     */
     @Override
     public Duration estimateTimeToPaint(double sqMeters) {
-        return this.schedule(sqMeters)
+        return this.scheduler.schedule(this.painters, sqMeters)
                 .map(WorkAssignment::estimateTimeToPaint)
                 .max(Duration::compareTo)
                 .get();
@@ -89,35 +96,41 @@ public class CompositePainter implements Painter {
 //                .get();
 //    }
 
-    private Stream<WorkAssignment> schedule(double sqMeters) {
-        return this.schedule(sqMeters, this.estimateTotalVelocity(sqMeters));
-    }
+    /**
+     * This method could be turned into an abstracted one
+     * However, it risks combinatorial explosion of features
+     * @param sqMeters
+     * @return
+     */
+//    private Stream<WorkAssignment> schedule(double sqMeters) {
+//        return this.scheduler.schedule(sqMeters, this.estimateTotalVelocity(sqMeters));
+//    }
 
     /**
      * Cuts the area into sections proportional to individual velocity
      * @param sqMeters
      * @param totalVelocity
      */
-    private Stream<WorkAssignment> schedule(double sqMeters, Velocity totalVelocity) {
-        return  Painter.stream(this.painters)
-                .map(painter -> painter.assign(sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)));
-    }
+//    private Stream<WorkAssignment> schedule(double sqMeters, Velocity totalVelocity) {
+//        return  Painter.stream(this.painters)
+//                .map(painter -> painter.assign(sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)));
+//    }
 
     /**
      * Calculates the total velocity
      * @param sqMeters
      * @return
      */
-    private Velocity estimateTotalVelocity(double sqMeters) {
-        return Painter.stream(painters)
-                .map(painter -> painter.estimateVelocity(sqMeters))
-                .reduce(Velocity::add)
-                .orElse(Velocity.ZERO);
-    }
+//    private Velocity estimateTotalVelocity(double sqMeters) {
+//        return Painter.stream(painters)
+//                .map(painter -> painter.estimateVelocity(sqMeters))
+//                .reduce(Velocity::add)
+//                .orElse(Velocity.ZERO);
+//    }
 
     @Override
     public Money estimateCompensation(double sqMeters) {
-        return schedule(sqMeters)
+        return this.scheduler.schedule(this.painters, sqMeters)
                 .map(WorkAssignment::estimateCompensation)
                 .reduce(Money::add)
                 .orElse(Money.ZERO);
