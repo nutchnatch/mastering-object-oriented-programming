@@ -25,7 +25,13 @@ public class CompressionPainter implements Painter {
         this.rate = rate;
     }
 
+    public long getCleaningSeconds() {
+        return cleaningTime.getSeconds();
+    }
 
+    public long getFillSeconds() {
+        return fillTime.getSeconds();
+    }
 
     @Override
     public Optional<Painter> available() {
@@ -48,5 +54,19 @@ public class CompressionPainter implements Painter {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public double estimateSqMeters(Duration time) {
+        long cleaningSeconds = this.getCleaningSeconds();
+        long remainingSeconds = Math.max(time.getSeconds() - cleaningSeconds, 0);
+        double burstSeconds = 3600 * this.fillAfterSqMeters / this.sqMetersPerHour;
+        double fullBurstSeconds = burstSeconds + this.getFillSeconds();
+        double fullBurst = (long)(remainingSeconds / fullBurstSeconds);
+        double lastBurstSeconds = remainingSeconds - fullBurst * fullBurstSeconds;
+        double lastBurstPaintingSeconds = Math.max(lastBurstSeconds - getFillSeconds(), 0);
+        double totalPaintingSeconds = fullBurstSeconds * burstSeconds + lastBurstPaintingSeconds;
+
+        return this.sqMetersPerHour * totalPaintingSeconds / 3600;
     }
 }

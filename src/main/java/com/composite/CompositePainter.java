@@ -155,6 +155,13 @@ public class CompositePainter implements Painter {
                 .collect(Collectors.joining(", ", "{ ", " }"));
     }
 
+    @Override
+    public double estimateSqMeters(Duration time) {
+        return Painter.stream(painters)
+                .mapToDouble(painter -> painter.estimateSqMeters(time))
+                .sum();
+    }
+
     private Stream<String> getPainterNames() {
         return Painter.stream(this.painters).map(Painter::getName);
     }

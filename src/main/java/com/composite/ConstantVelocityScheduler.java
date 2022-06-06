@@ -13,13 +13,14 @@ public class ConstantVelocityScheduler implements PaintingScheduler {
 
     private Stream<WorkAssignment> schedule(List<Painter> painters, double sqMeters, Velocity totalVelocity) {
         return  Painter.stream(painters)
-                .available()
+//                .available()  // To expose behavior composable, this method is removed
+                                // e.g filter(), then schedule()
                 .map(painter -> painter.assign(sqMeters * painter.estimateVelocity(sqMeters).divideBy(totalVelocity)));
     }
 
     private Velocity estimateTotalVelocity(List<Painter> painters, double sqMeters) {
         return Painter.stream(painters)
-                .available()
+//                .available()
                 .map(painter -> painter.estimateVelocity(sqMeters))
                 .reduce(Velocity::add)
                 .orElse(Velocity.ZERO);

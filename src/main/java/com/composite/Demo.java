@@ -108,7 +108,7 @@ public class Demo {
         System.out.println("Demo #3 - Compressor and roller painters working together");
         this.workTogether1(sqMeters, painters2);
 
-        Optional<CompositePainter> group2 = CompositePainter.of(painters2, new ConstantVelocityScheduler());
+        Optional<CompositePainter> group2 = CompositePainter.of(painters2, new EqualTimeScheduler());
         group2.ifPresent(group -> this.print(group, sqMeters));
 
         Optional<CompositePainter> group3 = group2.map(group ->
@@ -116,7 +116,7 @@ public class Demo {
                     painters1.get(0), painters1.get(1),
                     new CompressionPainter("Jeff", Duration.ofMinutes(12), 19, Duration.ofMinutes(27), 9, this.perHour(70)),
                     group))
-                .flatMap(painters3 -> CompositePainter.of(painters3, new ConstantVelocityScheduler()));
+                .flatMap(painters3 -> CompositePainter.of(painters3, new EqualTimeScheduler()));
         group3.ifPresent(group -> this.print(group, sqMeters));
     }
 

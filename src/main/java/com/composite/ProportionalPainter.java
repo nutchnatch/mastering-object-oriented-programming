@@ -25,6 +25,11 @@ public class ProportionalPainter implements Painter {
     @Override
     public String getName() { return this.name; }
 
+    @Override
+    public double estimateSqMeters(Duration time) {
+        return this.sqMetersPerHour * (time.getSeconds()) / (double)3600;
+    }
+
     private int getSecondsToPaint(double sqMeters) {
         return (int)(sqMeters / this.sqMetersPerHour * 3600);
     }
