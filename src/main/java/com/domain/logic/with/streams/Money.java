@@ -2,6 +2,7 @@ package com.domain.logic.with.streams;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.stream.Stream;
 
 public class Money implements Comparable<Money> {
     private BigDecimal amount;
@@ -30,6 +31,10 @@ public class Money implements Comparable<Money> {
 
     private Money scale(BigDecimal multiply, BigDecimal divide) {
         return new Money(this.getAmount().multiply(multiply).divide(divide, 2, RoundingMode.HALF_UP));
+    }
+
+    public static MoneyStream stream(Stream<Money> moneys) {
+        return new MoneyStream(moneys);
     }
 
     public int compareTo(Money other) {

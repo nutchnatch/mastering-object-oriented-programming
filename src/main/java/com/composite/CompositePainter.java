@@ -2,10 +2,11 @@ package com.composite;
 
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
+import com.domain.logic.with.streams.PaintersStream;
+import com.domain.logic.with.streams.WorkStream;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Optional;
@@ -17,9 +18,16 @@ import java.util.Optional;
  * Collects multiple results into a single result
  * It is represented as a single object, with many objects behind
  * An algorithm that must vary, should be represented by an object
+ *
+ * Methods have been transformed in order to use Domain Specific Language
+ * The code produced by Domain Specific Language, is self evident
+ * Imperative code contributes to hide programmer's intention
+ * To develop intention revealing code and ultimately the Domain Specific Language,
+ * We have to replace explicit controls (if, for, collect, etc) structure with declarative calls and give a meaningful name to each call
+ * Reach or Deap Model Object - every element in our thinking has a corresponding programmatic type which nodels it
  */
 public class CompositePainter implements Painter {
-    private List<Painter> painters;
+    private List<Painter> subordinatePainters;
     private PaintingScheduler scheduler;
 
     /**
@@ -27,18 +35,18 @@ public class CompositePainter implements Painter {
      * Should not be allowed
      * CompositePainter should not be public, but private
      * The caller should only get an Optional CompositePainter
-     * @param painters
+     * @param subordinatePainters
      */
 //    public CompositePainter(List<Painter> painters) {
-    private CompositePainter(List<Painter> painters, PaintingScheduler scheduler) {
-        this.painters = painters;
+    private CompositePainter(List<Painter> subordinatePainters, PaintingScheduler scheduler) {
+        this.subordinatePainters = subordinatePainters;
         this.scheduler = scheduler;
     }
 
-    public static Optional<CompositePainter> of(List<Painter> painters, PaintingScheduler scheduler) {
-        return painters.isEmpty()
+    public static Optional<CompositePainter> of(List<Painter> subordinatePainters, PaintingScheduler scheduler) {
+        return subordinatePainters.isEmpty()
                 ? Optional.empty()
-                : Optional.of(new CompositePainter(painters, scheduler));
+                : Optional.of(new CompositePainter(subordinatePainters, scheduler));
 
     }
 
@@ -54,9 +62,11 @@ public class CompositePainter implements Painter {
 
     @Override
     public Optional<Painter> available() {
-        return CompositePainter.of(
-            Painter.stream(this.painters).available().collect(Collectors.toList()), this.scheduler
-        ).map(Function.identity());
+        // This code can be improves
+//        return CompositePainter.of(
+//            painters().available().collect(Collectors.toList()), this.scheduler
+//        ).map(Function.identity());
+        return painters().available().workTogether(this.scheduler);
     }
 
     /**
@@ -66,10 +76,13 @@ public class CompositePainter implements Painter {
      */
     @Override
     public Duration estimateTimeToPaint(double sqMeters) {
-        return this.scheduler.schedule(this.painters, sqMeters)
-                .map(WorkAssignment::estimateTimeToPaint)
-                .max(Duration::compareTo)
-                .get();
+        return this.schedule(sqMeters)
+//                .map(WorkAssignment::estimateTimeToPaint)
+                .timesToPaint()
+                // Transform this stream of duration into a DurationStream
+//                .max(Duration::compareTo)
+//                .get();
+                .maxOfMany();
     }
 
 //    @Override
@@ -128,12 +141,22 @@ public class CompositePainter implements Painter {
 //                .orElse(Velocity.ZERO);
 //    }
 
+    /**
+     * We can create a specialized stream for this case (of WorkAssignment)
+     * @param sqMeters
+     * @return
+     */
     @Override
     public Money estimateCompensation(double sqMeters) {
-        return this.scheduler.schedule(this.painters, sqMeters)
-                .map(WorkAssignment::estimateCompensation)
-                .reduce(Money::add)
-                .orElse(Money.ZERO);
+        return this.schedule(sqMeters)
+                // Mapping work assignment to a stream of many objects, means ask  for compensation
+//                .map(WorkAssignment::estimateCompensation)
+                .compensations()
+                .sum();
+    }
+
+    private WorkStream schedule(double sqMeters) {
+        return this.scheduler.schedule(this.subordinatePainters, sqMeters);
     }
 
 //    @Override
@@ -157,12 +180,18 @@ public class CompositePainter implements Painter {
 
     @Override
     public double estimateSqMeters(Duration time) {
-        return Painter.stream(painters)
-                .mapToDouble(painter -> painter.estimateSqMeters(time))
-                .sum();
+//        return Painter.stream(painters) --> we can give this a name, since it is used a lot
+        return painters().estimateSqMeters(time);
+                    // Low level code belongs to low level class
+//                .mapToDouble(painter -> painter.estimateSqMeters(time)) --> this can be replaced for a method with an expressive name
+//                .sum();
+    }
+
+    private PaintersStream painters() {
+        return Painter.stream(subordinatePainters);
     }
 
     private Stream<String> getPainterNames() {
-        return Painter.stream(this.painters).map(Painter::getName);
+        return painters().map(Painter::getName);
     }
 }

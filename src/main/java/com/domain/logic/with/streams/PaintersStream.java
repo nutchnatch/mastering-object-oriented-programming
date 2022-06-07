@@ -1,7 +1,14 @@
 package com.domain.logic.with.streams;
 
+import com.composite.CompositePainter;
+import com.composite.PaintingScheduler;
+import com.composite.WorkAssignment;
+
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -29,6 +36,25 @@ public class PaintersStream implements ForwardingStream<Painter> {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
         );
+    }
+
+    public double estimateSqMeters(Duration time) {
+        return this.getStream().mapToDouble(painter -> painter.estimateSqMeters(time))
+                .sum();
+    }
+
+    public Optional<Painter> workTogether(PaintingScheduler scheduler) {
+        return CompositePainter.of(this.stream.collect(Collectors.toList()), scheduler)
+                .map(Function.identity());
+    }
+
+    public WorkStream assign(Duration time) {
+        return WorkAssignment.stream(this.getStream()
+                .map(painter -> painter.assign(painter.estimateSqMeters(time))));
+    }
+
+    public DurationStream tomesToPaint(double sqMeters) {
+        return new DurationStream(this.getStream().map(painter -> painter.estimateTimeToPaint(sqMeters)));
     }
 
     /**

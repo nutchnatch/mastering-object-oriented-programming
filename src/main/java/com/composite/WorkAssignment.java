@@ -2,7 +2,10 @@ package com.composite;
 
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
+import com.domain.logic.with.streams.WorkStream;
+
 import java.time.Duration;
+import java.util.stream.Stream;
 
 /**
  * A type should always correspond to a word in the domain-related language
@@ -37,5 +40,14 @@ public class WorkAssignment {
 
     public Duration estimateTimeToPaint() {
         return this.painter.estimateTimeToPaint(this.sqMeters);
+    }
+
+    /**
+     * WorkAssinment is the stream factory, and we can use it to create a WorkStrem which will have specialized methods for the stream
+     * @param assignments
+     * @return
+     */
+    public static WorkStream stream(Stream<WorkAssignment> assignments) {
+        return new WorkStream(assignments);
     }
 }
