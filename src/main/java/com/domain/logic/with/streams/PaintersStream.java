@@ -7,7 +7,6 @@ import com.composite.WorkAssignment;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +32,7 @@ public class PaintersStream implements ForwardingStream<Painter> {
     public PaintersStream available() {
         return new PaintersStream(this.getStream()
                 .map(Painter::available)
+                .map(OptionalPainter::asOptional)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
         );
@@ -43,14 +43,25 @@ public class PaintersStream implements ForwardingStream<Painter> {
                 .sum();
     }
 
-    public Optional<Painter> workTogether(PaintingScheduler scheduler) {
-        return CompositePainter.of(this.stream.collect(Collectors.toList()), scheduler)
-                .map(Function.identity());
+    public OptionalPainter workTogether(PaintingScheduler scheduler) {
+        return CompositePainter.of(this.stream.collect(Collectors.toList()), scheduler);
     }
 
     public WorkStream assign(Duration time) {
         return WorkAssignment.stream(this.getStream()
                 .map(painter -> painter.assign(painter.estimateSqMeters(time))));
+    }
+
+    public PaintersStream with(Painter other) {
+        return new PaintersStream(Stream.concat(this.stream, Stream.of(other)));
+    }
+
+    public PaintersStream with(Optional<Painter> other) {
+        return other.map(this::with).orElse(this);
+    }
+
+    public PaintersStream with(OptionalPainter other) {
+        return this.with(other.asOptional());
     }
 
     public DurationStream tomesToPaint(double sqMeters) {

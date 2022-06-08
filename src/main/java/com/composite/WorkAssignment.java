@@ -1,5 +1,6 @@
 package com.composite;
 
+import com.composite.common.TimeUtils;
 import com.domain.logic.with.streams.Money;
 import com.domain.logic.with.streams.Painter;
 import com.domain.logic.with.streams.WorkStream;
@@ -49,5 +50,16 @@ public class WorkAssignment {
      */
     public static WorkStream stream(Stream<WorkAssignment> assignments) {
         return new WorkStream(assignments);
+    }
+
+    @Override
+    public String toString() {
+        Money compensation = this.painter.estimateCompensation(sqMeters);
+        Duration totalTime = this.painter.estimateTimeToPaint(sqMeters);
+        String formattedTime = TimeUtils.format(totalTime);
+
+        return String.format(
+                "Letting %s paint %.2f sq. meters during %s at total cost %s",
+                this.painter.getName(), this.sqMeters, formattedTime, compensation);
     }
 }

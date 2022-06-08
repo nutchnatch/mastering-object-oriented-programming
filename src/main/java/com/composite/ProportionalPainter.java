@@ -1,6 +1,7 @@
 package com.composite;
 
 import com.domain.logic.with.streams.Money;
+import com.domain.logic.with.streams.OptionalPainter;
 import com.domain.logic.with.streams.Painter;
 
 import java.time.Duration;
@@ -35,8 +36,8 @@ public class ProportionalPainter implements Painter {
     }
 
     @Override
-    public Optional<Painter> available() {
-        return Optional.of(this);
+    public OptionalPainter available() {
+        return OptionalPainter.of(this);
     }
 
     @Override

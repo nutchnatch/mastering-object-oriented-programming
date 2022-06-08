@@ -1,9 +1,6 @@
 package com.composite;
 
-import com.domain.logic.with.streams.Money;
-import com.domain.logic.with.streams.Painter;
-import com.domain.logic.with.streams.PaintersStream;
-import com.domain.logic.with.streams.WorkStream;
+import com.domain.logic.with.streams.*;
 
 import java.time.Duration;
 import java.util.List;
@@ -43,10 +40,10 @@ public class CompositePainter implements Painter {
         this.scheduler = scheduler;
     }
 
-    public static Optional<CompositePainter> of(List<Painter> subordinatePainters, PaintingScheduler scheduler) {
+    public static OptionalPainter of(List<Painter> subordinatePainters, PaintingScheduler scheduler) {
         return subordinatePainters.isEmpty()
-                ? Optional.empty()
-                : Optional.of(new CompositePainter(subordinatePainters, scheduler));
+                ? OptionalPainter.empty()
+                : OptionalPainter.of(new CompositePainter(subordinatePainters, scheduler));
 
     }
 
@@ -61,7 +58,7 @@ public class CompositePainter implements Painter {
 //    }
 
     @Override
-    public Optional<Painter> available() {
+    public OptionalPainter available() {
         // This code can be improves
 //        return CompositePainter.of(
 //            painters().available().collect(Collectors.toList()), this.scheduler

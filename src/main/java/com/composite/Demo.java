@@ -2,6 +2,8 @@ package com.composite;
 
 import com.composite.common.TimeUtils;
 import com.domain.logic.with.streams.Money;
+import com.domain.logic.with.streams.OptionalAssigment;
+import com.domain.logic.with.streams.OptionalPainter;
 import com.domain.logic.with.streams.Painter;
 import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
@@ -100,24 +102,42 @@ public class Demo {
 
         System.out.println();
         System.out.println("Demo #2 - Letting a composite  painter work");
-        Optional<CompositePainter> group1 = CompositePainter.of(painters1, new ConstantVelocityScheduler());
-        group1.ifPresent(group -> this.print(group, sqMeters));
+        OptionalPainter group1 = CompositePainter.of(painters1, new ConstantVelocityScheduler());
+        group1.asOptional().ifPresent(group -> this.print(group, sqMeters));
 
         List<Painter> painters2 = this.createPainters2();
         System.out.println();
         System.out.println("Demo #3 - Compressor and roller painters working together");
         this.workTogether1(sqMeters, painters2);
 
-        Optional<CompositePainter> group2 = CompositePainter.of(painters2, new EqualTimeScheduler());
-        group2.ifPresent(group -> this.print(group, sqMeters));
+        System.out.println();
+        System.out.println("Demo #4 - Composite with compressor and roller painter");
+        OptionalPainter group2 = CompositePainter.of(painters2, new EqualTimeScheduler());
+        group2.asOptional().ifPresent(group -> this.print(group, sqMeters));
 
-        Optional<CompositePainter> group3 = group2.map(group ->
+        // This section is hard to read, because CompositePainter is Optional
+        // Any attempt to combine CompositePainters will be swarming with cost to map, flatMap on Optionals
+        System.out.println();
+        System.out.println("Demo #5 - Recursively composing composite painters");
+        Optional<Painter> group3 = group2.map(group ->
                 Arrays.asList(
                     painters1.get(0), painters1.get(1),
                     new CompressionPainter("Jeff", Duration.ofMinutes(12), 19, Duration.ofMinutes(27), 9, this.perHour(70)),
                     group))
-                .flatMap(painters3 -> CompositePainter.of(painters3, new EqualTimeScheduler()));
+                .flatMap(painters3 -> CompositePainter.of(painters3, new EqualTimeScheduler()).asOptional());
         group3.ifPresent(group -> this.print(group, sqMeters));
+
+        OptionalAssigment assigment = painters1.get(0)
+                .with(painters1.get(1))
+                .with(new CompressionPainter(
+                        "Jim", Duration.ofMinutes(9), 14,
+                        Duration.ofMinutes(22), 11, this.perHour(90)))
+                .with(group2)
+                .available()
+                .workTogether(new EqualTimeScheduler())
+                .assign(sqMeters);
+
+        System.out.println(assigment);
     }
 
 }

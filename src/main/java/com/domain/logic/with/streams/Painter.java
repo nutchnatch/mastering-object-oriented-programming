@@ -7,16 +7,27 @@ import javax.xml.bind.ValidationEventLocator;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface Painter {
 
     // this method should not exist in this interface, it is not object oriented - should be replaced by available method
 //    boolean isAvailable();
-    Optional<Painter> available();
+    OptionalPainter available();
     Duration estimateTimeToPaint(double sqMeters);
     Money estimateCompensation(double sqMeters);
     String getName();
     double estimateSqMeters(Duration time);
+
+    default PaintersStream with(Painter other) {
+        return new PaintersStream(Stream.of(this, other));
+    }
+
+    default PaintersStream with(Optional<Painter> other) {
+        return other
+                .map(this::with)
+                .orElse(new PaintersStream(Stream.of(this)));
+    }
 
     /**
      * Assigns a sqMeters to a painter

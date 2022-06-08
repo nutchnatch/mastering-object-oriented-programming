@@ -1,6 +1,7 @@
 package com.composite;
 
 import com.domain.logic.with.streams.Money;
+import com.domain.logic.with.streams.OptionalPainter;
 import com.domain.logic.with.streams.Painter;
 
 import javax.swing.text.html.Option;
@@ -34,8 +35,8 @@ public class CompressionPainter implements Painter {
     }
 
     @Override
-    public Optional<Painter> available() {
-        return Optional.of(this);
+    public OptionalPainter available() {
+        return OptionalPainter.of(this);
     }
 
     @Override
