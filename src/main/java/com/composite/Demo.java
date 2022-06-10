@@ -138,6 +138,23 @@ public class Demo {
                 .assign(sqMeters);
 
         System.out.println(assigment);
+
+        PaintingScheduler[] schedulers = { new EqualTimeScheduler(), SelectingScheduler.fastest(), SelectingScheduler.cheapest()};
+
+        System.out.println();
+        System.out.println("Demo #6 - Recursively composing multiple schedulers");
+        for(PaintingScheduler scheduler: schedulers) {
+            OptionalAssigment assigment2 = painters1.get(0)
+                    .with(painters1.get(1))
+                    .with(new CompressionPainter(
+                            "Jim", Duration.ofMinutes(9), 14,
+                            Duration.ofMinutes(22), 11, this.perHour(90)))
+                    .with(group2)
+                    .available()
+                    .workTogether(scheduler)
+                    .assign(sqMeters);
+            System.out.println(assigment2);
+        }
     }
 
 }

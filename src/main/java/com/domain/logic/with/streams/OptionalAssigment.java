@@ -2,7 +2,6 @@ package com.domain.logic.with.streams;
 
 import com.composite.WorkAssignment;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 import java.util.stream.Stream;
 
