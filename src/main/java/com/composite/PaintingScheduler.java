@@ -12,6 +12,6 @@ import java.util.stream.Stream;
  * We can remove entire hardcoded implementation from consumer
  */
 public interface PaintingScheduler {
-
+//    Stream<WorkAssignment> schedule(List<Painter> painters, double sqMeters);
     WorkStream schedule(List<Painter> painters, double sqMeters);
 }

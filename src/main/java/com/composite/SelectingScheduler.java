@@ -16,6 +16,8 @@ import java.util.function.Function;
  * Internal DSL's are developed in the language in which the rest of model is programmed
  * The primary users are the programmers
  * DSL lets programmers write more effective code, chaining meaningful calls and using meaningful intermediate objects
+ * DSL composes elements of code the same way we compose sentences is a spoken language
+ * I a DSL, methods speak the language of the business they are modeling
  * Opposed to traditional coding styles, DSL based style is more flexible and very expressive
  * Code is intention-revealed by design
  * Preconditions of a DSL:

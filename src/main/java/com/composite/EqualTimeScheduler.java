@@ -15,6 +15,7 @@ import java.util.Optional;
  * Some might work in a non-linear wave
  * Most of the methods in a Domain Model can turned into one liners, once we reach the deap and detail Domain Model
  * Code which was hard to understand migrates to specialized classes each of which alone will be easier to understand
+ * To improve readability, classes must return customized objects from their methods
  */
 public class EqualTimeScheduler implements PaintingScheduler {
     @Override
