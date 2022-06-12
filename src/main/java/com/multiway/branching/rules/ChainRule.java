@@ -1,4 +1,8 @@
-package com.multiway.branching;
+package com.multiway.branching.rules;
+
+import com.multiway.branching.Action;
+import com.multiway.branching.ClaimingRule;
+import com.multiway.branching.states.OperationalStatus;
 
 import java.util.Optional;
 
@@ -25,7 +29,7 @@ public class ChainRule implements ClaimingRule {
      * @return
      */
     @Override
-    public Optional<Action> applicableTo(DeviceStatus status) {
+    public Optional<Action> applicableTo(OperationalStatus status) {
         return this.head
                 .applicableTo(status)
                 .map(Optional::of)

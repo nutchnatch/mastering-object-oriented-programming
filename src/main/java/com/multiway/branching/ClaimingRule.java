@@ -1,5 +1,8 @@
 package com.multiway.branching;
 
+import com.multiway.branching.rules.ChainRule;
+import com.multiway.branching.states.OperationalStatus;
+
 import java.util.Optional;
 
 /**
@@ -18,7 +21,7 @@ public interface ClaimingRule {
     // Boolean methods are a limitation
     // Better design follows
     // This is a filtering form that can transform this interface
-    Optional<Action> applicableTo(DeviceStatus status);
+    Optional<Action> applicableTo(OperationalStatus status);
 
     /**
      * Procedure to introduce a technical detail to the code base without inflicting complexity on any consuming code

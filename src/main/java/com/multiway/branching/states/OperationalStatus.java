@@ -1,30 +1,48 @@
-package com.multiway.branching;
+package com.multiway.branching.states;
 
 import java.util.Objects;
 
-public class DeviceStatus {
-
+public class OperationalStatus {
     /**
      * Static final fields are not the right place to contain responsibilities
      */
 //    public static final DeviceStatus ALL_FINE = new DeviceStatus(0);
-    public static DeviceStatus allFine() { return new DeviceStatus(0);}
+    public static OperationalStatus allFine() { return new OperationalStatus(0);}
 //    public static final DeviceStatus NOT_OPERATIONAL = new DeviceStatus(2);
-    public static DeviceStatus notOperational() { return new DeviceStatus(2);}
+    public static OperationalStatus notOperational() { return new OperationalStatus(1);}
 //    public static final DeviceStatus VISIBLY_DAMAGED = new DeviceStatus(3);
-    public static DeviceStatus visiblyDamaged(){ return new DeviceStatus(3);}
+    public static OperationalStatus visiblyDamaged(){ return new OperationalStatus(2);}
+
+    //    public static final DeviceStatus SENSOR_FAILED = new DeviceStatus(4);
+    public static OperationalStatus sensorFailed() { return new OperationalStatus(4);}
+
+    private final int representation;
+    public OperationalStatus(int representation) {
+        this.representation = representation;
+    }
+
+    public OperationalStatus andNotOperational() {
+        return this.add(notOperational());
+    }
+
+    public OperationalStatus andVisiblyDamaged(){
+        return this.add(visiblyDamaged());
+    }
+
+    public OperationalStatus andSensorFailed(){
+        return this.add(sensorFailed());
+    }
+
+    public boolean isSupersetOf(OperationalStatus other) {
+        return (this.representation & other.representation) == other.representation;
+    }
+
 //    public static final DeviceStatus SENSOR_FAILED = new DeviceStatus(4);
-    public static DeviceStatus sensorFailed() { return new DeviceStatus(4);}
+//    public static DeviceStatus sensorFailed(LocalDate detectedOn) { return new DeviceStatus(4);}
 //    public static final DeviceStatus NOT_OPERATIONAL_DAMAGE = combine(NOT_OPERATIONAL, VISIBLY_DAMAGED);
 //    public static final DeviceStatus NOT_OPERATIONAL_SENSOR_FAILED = combine(NOT_OPERATIONAL, SENSOR_FAILED);
 //    public static final DeviceStatus DAMAGED_SENSOR_FAILED = combine(VISIBLY_DAMAGED, SENSOR_FAILED);
 //    public static final DeviceStatus NOT_OPERATIONAL_DAMAGE_SENSOR_FAILED = combine(NOT_OPERATIONAL, VISIBLY_DAMAGED);
-
-    private final int representation;
-
-    private DeviceStatus(int representation) {
-        this.representation = representation;
-    }
 
     /**
      * Enumerations are not allowed to construct a new object
@@ -40,8 +58,8 @@ public class DeviceStatus {
 //                .reduce(0, (a, b) -> a | b));
 //    }
 
-    public DeviceStatus add(DeviceStatus status) {
-        return new DeviceStatus(this.representation | status.representation);
+    public OperationalStatus add(OperationalStatus status) {
+        return new OperationalStatus(this.representation | status.representation);
 //        return Stream.of(
 //                ALL_FINE, NOT_OPERATIONAL, VISIBLY_DAMAGED, SENSOR_FAILED, NOT_OPERATIONAL_DAMAGE, NOT_OPERATIONAL_SENSOR_FAILED,
 //                DAMAGED_SENSOR_FAILED, NOT_OPERATIONAL_DAMAGE_SENSOR_FAILED)
@@ -54,12 +72,30 @@ public class DeviceStatus {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DeviceStatus that = (DeviceStatus) o;
+        OperationalStatus that = (OperationalStatus) o;
         return representation == that.representation;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(representation);
+    }
+
+    @Override
+    public String toString() {
+        String result = "";
+        String separator = "";
+        if(this.isSupersetOf(notOperational())) {
+            result += separator + "Not Operational";
+            separator = " + ";
+        }
+        if(this.isSupersetOf(visiblyDamaged())) {
+            result += separator + "Damaged";
+            separator = " + ";
+        }
+        if(this.isSupersetOf(sensorFailed())) {
+            result += separator + "Sensor Failed";
+        }
+        return result;
     }
 }

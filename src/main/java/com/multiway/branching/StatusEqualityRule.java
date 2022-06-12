@@ -1,12 +1,14 @@
 package com.multiway.branching;
 
+import com.multiway.branching.states.OperationalStatus;
+
 import java.util.Optional;
 
 public class StatusEqualityRule implements ClaimingRule, Action {
-    private final DeviceStatus pattern;
+    private final OperationalStatus pattern;
     private final Runnable action;
 
-    private StatusEqualityRule(DeviceStatus pattern, Runnable action) {
+    private StatusEqualityRule(OperationalStatus pattern, Runnable action) {
         this.pattern = pattern;
         this.action = action;
     }
@@ -18,7 +20,7 @@ public class StatusEqualityRule implements ClaimingRule, Action {
      * @param action
      * @return
      */
-    public static ClaimingRule match(DeviceStatus pattern, Runnable action) {
+    public static ClaimingRule match(OperationalStatus pattern, Runnable action) {
         return new StatusEqualityRule(pattern, action);
     }
 
@@ -31,7 +33,7 @@ public class StatusEqualityRule implements ClaimingRule, Action {
     }
 
     @Override
-    public Optional<Action> applicableTo(DeviceStatus status) {
+    public Optional<Action> applicableTo(OperationalStatus status) {
         return this.pattern.equals(status)
                 ? Optional.of(this)
                 : Optional.empty();

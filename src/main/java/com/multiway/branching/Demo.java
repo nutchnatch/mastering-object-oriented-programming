@@ -1,5 +1,7 @@
 package com.multiway.branching;
 
+import com.multiway.branching.states.OperationalStatus;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -53,20 +55,17 @@ public class Demo {
 
         StatusEqualityRule
                 .match( // --> Rule configuration
-                    DeviceStatus.allFine(),
+                    OperationalStatus.allFine(),
                     () -> claimMoneyBack(article, today))
                 .orElse(StatusEqualityRule.match( // --> Rule configuration
-                        DeviceStatus.sensorFailed(),
+                        OperationalStatus.sensorFailed(),
                         () -> {
                             claimMoneyBack(article, today);
                             claimExpress(article, today);
                         }))
                 .orElse(StatusEqualityRule.match(
-                        DeviceStatus.visiblyDamaged(),
+                        OperationalStatus.visiblyDamaged(),
                         () -> {}))
-                .orElse(StatusEqualityRule.match(
-
-                ))
                 .applicableTo(status)  // --> Filtering
                 .ifPresent(Action::apply);  // --> Execution
 
@@ -87,17 +86,17 @@ public class Demo {
         };
         Runnable visiblyDamaged = () -> claimExtended(article, today, sensorFailureDate);
 
-        if (status.equals(DeviceStatus.allFine())) {
+        if (status.equals(OperationalStatus.allFine())) {
             allFineAction.run();
-        } else if (status.equals(DeviceStatus.notOperational())) {
+        } else if (status.equals(OperationalStatus.notOperational())) {
 
-        } else if (status.equals(DeviceStatus.sensorFailed())) {
+        } else if (status.equals(OperationalStatus.sensorFailed())) {
 
-        } else if (status.equals(DeviceStatus.notOperational().add(DeviceStatus.visiblyDamaged()))) {
+        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.visiblyDamaged()))) {
 
-        } else if (status.equals(DeviceStatus.notOperational().add(DeviceStatus.sensorFailed()))) {
+        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.sensorFailed()))) {
 
-        } else if (status.equals(DeviceStatus.visiblyDamaged())) {
+        } else if (status.equals(OperationalStatus.visiblyDamaged())) {
             claimExtended(article, today, sensorFailureDate);
         } else {
             claimExpress(article, today);
@@ -174,13 +173,13 @@ public class Demo {
         // I am forced to cover the cases which doesn't apply to my current situation
         // Optional.empty should be encapsulated on an object
         // But with this logic, I have no object and so, that variable is under my responsibility
-        this.claimWarranty(item, DeviceStatus.allFine(), Optional.empty());
-        this.claimWarranty(item, DeviceStatus.visiblyDamaged(), Optional.empty());
-        this.claimWarranty(item, DeviceStatus.notOperational(), Optional.empty());
-        this.claimWarranty(item, DeviceStatus.sensorFailed(), Optional.empty());
+        this.claimWarranty(item, OperationalStatus.allFine());
+        this.claimWarranty(item, OperationalStatus.visiblyDamaged());
+        this.claimWarranty(item, OperationalStatus.notOperational());
+        this.claimWarranty(item, OperationalStatus.sensorFailed());
 
         LocalDate sensorExamined = LocalDate.now().minus(2, ChronoUnit.DAYS);
-        this.claimWarranty(item, DeviceStatus.sensorFailed(), Optional.of(sensorExamined));
-        this.claimWarranty(item, DeviceStatus.notOperational().add(DeviceStatus.sensorFailed()), Optional.of(sensorExamined));
+        this.claimWarranty(item, OperationalStatus.sensorFailed(), Optional.of(sensorExamined));
+        this.claimWarranty(item, OperationalStatus.notOperational().add(OperationalStatus.sensorFailed()), Optional.of(sensorExamined));
     }
 }
