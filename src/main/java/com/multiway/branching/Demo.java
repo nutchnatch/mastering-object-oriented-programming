@@ -27,29 +27,76 @@ public class Demo {
      * Each object will represent a rule - a chain of rules
      * A rule condition should either be satisfied, or not
      * If not, it transfer control to the next rule in the line
+     * Actions can be turned into active rules
+     * Action is a function which doesn't produce a result, instead just mutates the state internally
+     * Optional sensorFailureDate parameter is a flaw, because its value is coupled with the value of the DeviceStatus status
+     * If we see two variables coupled by a rigid rule, we should immediately identify them as a design flaw
+     * Optional sensorFailureDate can be empty (then status should not exist) or non-empty (must include the sensor (failed) field)
+     * Methods signature must be absolutely correct, so they can behave correctly on all usages that pass the build
+     * Code that pass the build, must be correct
+     * Optional<LocalDate> sensorFailureDate should be part of another object
+     * Rules support that by design, collecting data while preparing the act
+     * DeviceStatus should become a component of a larger object (OperationalStatus)
      * @param article
      * @param status
      */
-    public void claimWarranty(Article article, DeviceStatus status, Optional<LocalDate> sensorFailureDate) {
+//    public void claimWarranty(Article article, DeviceStatus status, Optional<LocalDate> sensorFailureDate) {
+    public void claimWarranty(Article article, OperationalStatus status) {
 
         LocalDate today = LocalDate.now();
         // Object Oriented code should not depend on reference equality
         // Use equals method instead, whenever there is a semantic definition of equality between objects of some class
 //        if (status == DeviceStatus.ALL_FINE) {
+
+        // We can wrap the whole body into a runnable object to hide its arguments
+        Runnable allFineAction = () -> claimMoneyBack(article, today);
+
+        StatusEqualityRule
+                .match( // --> Rule configuration
+                    DeviceStatus.allFine(),
+                    () -> claimMoneyBack(article, today))
+                .orElse(StatusEqualityRule.match( // --> Rule configuration
+                        DeviceStatus.sensorFailed(),
+                        () -> {
+                            claimMoneyBack(article, today);
+                            claimExpress(article, today);
+                        }))
+                .orElse(StatusEqualityRule.match(
+                        DeviceStatus.visiblyDamaged(),
+                        () -> {}))
+                .orElse(StatusEqualityRule.match(
+
+                ))
+                .applicableTo(status)  // --> Filtering
+                .ifPresent(Action::apply);  // --> Execution
+
+
+        Runnable notOperational = () -> {
+            claimMoneyBack(article, today);
+            claimExpress(article, today);
+        };
+        Runnable sensorFailed = () -> {
+            claimMoneyBack(article, today);
+            claimExtended(article, today, sensorFailureDate);
+        };
+        Runnable notOperationalDamage = () -> claimExpress(article, today);
+        Runnable notOperationalSensorFailed = () -> {
+            claimMoneyBack(article, today);
+            claimExpress(article, today);
+            claimExtended(article, today, sensorFailureDate);
+        };
+        Runnable visiblyDamaged = () -> claimExtended(article, today, sensorFailureDate);
+
         if (status.equals(DeviceStatus.allFine())) {
-            claimMoneyBack(article, today);
+            allFineAction.run();
         } else if (status.equals(DeviceStatus.notOperational())) {
-            claimMoneyBack(article, today);
-            claimExpress(article, today);
+
         } else if (status.equals(DeviceStatus.sensorFailed())) {
-            claimMoneyBack(article, today);
-            claimExtended(article, today, sensorFailureDate);
+
         } else if (status.equals(DeviceStatus.notOperational().add(DeviceStatus.visiblyDamaged()))) {
-            claimExpress(article, today);
+
         } else if (status.equals(DeviceStatus.notOperational().add(DeviceStatus.sensorFailed()))) {
-            claimMoneyBack(article, today);
-            claimExpress(article, today);
-            claimExtended(article, today, sensorFailureDate);
+
         } else if (status.equals(DeviceStatus.visiblyDamaged())) {
             claimExtended(article, today, sensorFailureDate);
         } else {
@@ -67,14 +114,20 @@ public class Demo {
      * All the maintenance hell will be unleashed upon you too
      * Representation should be closed into an object
      * Enumeration shows a lack of Object Oriented design
+     * Methods signature must be absolutely correct, so they can behave correctly on all usages that pass the build
+     * Code that pass the build, must be correct
      * @param article
      * @param today
      * @param sensorFailureDate
      */
-    private void claimExtended(Article article, LocalDate today, Optional<LocalDate> sensorFailureDate) {
-        // A consumer
-        sensorFailureDate
-                .flatMap(date -> article.getExtendedWarranty().filter(date))
+//    private void claimExtended(Article article, LocalDate today, Optional<LocalDate> sensorFailureDate) {
+//        // A consumer
+//        sensorFailureDate
+//                .flatMap(date -> article.getExtendedWarranty().filter(date))
+//                .ifPresent(warranty -> warranty.on(today).claim(this::offerSensorRepair));
+//    }
+    private void claimExtended(Article article, LocalDate today, LocalDate sensorFailureDate) {
+        article.getExtendedWarranty().filter(sensorFailureDate)
                 .ifPresent(warranty -> warranty.on(today).claim(this::offerSensorRepair));
     }
 
