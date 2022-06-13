@@ -2,7 +2,7 @@ package com.multiway.branching.rules;
 
 import com.multiway.branching.Action;
 import com.multiway.branching.ClaimingRule;
-import com.multiway.branching.states.OperationalStatus;
+import com.multiway.branching.states.DeviceStatus;
 
 import java.util.Optional;
 
@@ -10,11 +10,11 @@ import java.util.Optional;
  * This class is not part of the domain
  * We can consider, packaging technical classes together with abstractions
  */
-public class ChainRule implements ClaimingRule {
+public class ChainedRule implements ClaimingRule {
     private ClaimingRule head;
     private ClaimingRule tail;
 
-    public ChainRule(ClaimingRule head, ClaimingRule tail) {
+    public ChainedRule(ClaimingRule head, ClaimingRule tail) {
         this.head = head;
         this.tail = tail;
     }
@@ -29,7 +29,7 @@ public class ChainRule implements ClaimingRule {
      * @return
      */
     @Override
-    public Optional<Action> applicableTo(OperationalStatus status) {
+    public Optional<Action> applicableTo(DeviceStatus status) {
         return this.head
                 .applicableTo(status)
                 .map(Optional::of)

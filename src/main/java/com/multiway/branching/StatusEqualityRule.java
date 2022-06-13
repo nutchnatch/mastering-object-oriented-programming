@@ -1,5 +1,6 @@
 package com.multiway.branching;
 
+import com.multiway.branching.states.DeviceStatus;
 import com.multiway.branching.states.OperationalStatus;
 
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class StatusEqualityRule implements ClaimingRule, Action {
     }
 
     @Override
-    public Optional<Action> applicableTo(OperationalStatus status) {
+    public Optional<Action> applicableTo(DeviceStatus status) {
         return this.pattern.equals(status)
                 ? Optional.of(this)
                 : Optional.empty();

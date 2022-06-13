@@ -1,6 +1,7 @@
 package com.multiway.branching;
 
-import com.multiway.branching.rules.ChainRule;
+import com.multiway.branching.rules.ChainedRule;
+import com.multiway.branching.states.DeviceStatus;
 import com.multiway.branching.states.OperationalStatus;
 
 import java.util.Optional;
@@ -21,7 +22,7 @@ public interface ClaimingRule {
     // Boolean methods are a limitation
     // Better design follows
     // This is a filtering form that can transform this interface
-    Optional<Action> applicableTo(OperationalStatus status);
+    Optional<Action> applicableTo(DeviceStatus status);
 
     /**
      * Procedure to introduce a technical detail to the code base without inflicting complexity on any consuming code
@@ -30,7 +31,7 @@ public interface ClaimingRule {
      * @return
      */
     default ClaimingRule orElse(ClaimingRule next) {
-        return new ChainRule(this, next);
+        return new ChainedRule(this, next);
     }
 
 
