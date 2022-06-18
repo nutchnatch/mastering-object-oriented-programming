@@ -19,6 +19,26 @@ public class State {
         return matching(status, DeviceStatus.class);
     }
 
+    public static RootCondition<DeviceStatus> doesNotInclude(OperationalStatus status) {
+        return new InvertingCondition(
+                new AppendingCondition<>(
+                        new StatusTypeCondition<>(DeviceStatus.class),
+                        new OperationalMaskCondition<>(status)
+                )
+        );
+    }
+
+    public static <T extends DeviceStatus> RootCondition<T> matching(Class<T> stateType) {
+        return new StatusTypeCondition<>(stateType);
+    }
+
+    public static RootCondition<DeviceStatus> includes(OperationalStatus status) {
+        return new AppendingCondition<>(
+                        new StatusTypeCondition<>(DeviceStatus.class),
+                        new OperationalMaskCondition<>(status)
+                );
+    }
+
     /**
      * Matches both Matches only an OperationStatus and runtime type
      * @param pattern

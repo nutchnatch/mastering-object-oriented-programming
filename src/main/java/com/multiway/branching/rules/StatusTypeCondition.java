@@ -4,7 +4,7 @@ import com.multiway.branching.states.DeviceStatus;
 
 import java.util.Optional;
 
-public class StatusTypeCondition<T extends DeviceStatus> implements RootCondition<T> {
+public class StatusTypeCondition<T extends DeviceStatus> implements RootCondition<T>, ExtendingCondition<DeviceStatus, T> {
     private Class<T> statusType;
 
     public StatusTypeCondition(Class<T> statusType) {

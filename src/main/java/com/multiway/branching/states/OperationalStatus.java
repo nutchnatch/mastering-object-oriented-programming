@@ -70,15 +70,17 @@ public class OperationalStatus {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OperationalStatus that = (OperationalStatus) o;
-        return representation == that.representation;
+        return o instanceof OperationalStatus && this.equals((OperationalStatus) o);
     }
+
+    private boolean equals(OperationalStatus other) {
+        return this.representation == other.representation;
+    }
+
 
     @Override
     public int hashCode() {
-        return Objects.hash(representation);
+        return this.representation;
     }
 
     @Override

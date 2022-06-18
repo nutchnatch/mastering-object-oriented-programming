@@ -1,5 +1,6 @@
 package com.multiway.branching.states;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -46,6 +47,12 @@ public class DeviceStatus {
 
     public Optional<DeviceStatus> matches(OperationalStatus pattern) {
         return this.state.equals(pattern)
+                ? Optional.of(this)
+                : Optional.empty();
+    }
+
+    public Optional<DeviceStatus> isSupersetOf(OperationalStatus pattern) {
+        return this.state.isSupersetOf(pattern)
                 ? Optional.of(this)
                 : Optional.empty();
     }

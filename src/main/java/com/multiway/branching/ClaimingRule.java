@@ -1,8 +1,8 @@
 package com.multiway.branching;
 
 import com.multiway.branching.rules.ChainedRule;
+import com.multiway.branching.rules.WithRule;
 import com.multiway.branching.states.DeviceStatus;
-import com.multiway.branching.states.OperationalStatus;
 
 import java.util.Optional;
 
@@ -34,5 +34,7 @@ public interface ClaimingRule {
         return new ChainedRule(this, next);
     }
 
-
+    default ClaimingRule with(ClaimingRule other) {
+        return new WithRule(this, other);
+    }
 }

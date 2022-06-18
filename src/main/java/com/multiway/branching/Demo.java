@@ -1,11 +1,14 @@
 package com.multiway.branching;
 
-import com.multiway.branching.states.OperationalStatus;
+import com.multiway.branching.builders.ClaimingRulesBuilder;
+import com.multiway.branching.builders.ExhaustiveRulesBuilder;
+import com.multiway.branching.builders.PartitioningRulesBuilder;
+import com.multiway.branching.states.DeviceStatus;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+import java.util.function.Supplier;
 
 public class Demo {
 
@@ -39,69 +42,95 @@ public class Demo {
      * Optional<LocalDate> sensorFailureDate should be part of another object
      * Rules support that by design, collecting data while preparing the act
      * DeviceStatus should become a component of a larger object (OperationalStatus)
+     * Rules know when to activate any action
+     * Constructing the rule should be someone else responsibility - ClaimingRulesBuilder interface
+     * ClaimingRulesBuilder - builders are known to be stateful
+     * So, we should not accept a ready object, because we cannot guarantee that it is in a clean state
+     * When we need to control lifetime of an object, better ask for a factory instead: Supplier<ClaimingRulesBuilder>
+     * To implement the Separation of Responsibility, we have the following three points:
+     * - This class knows the Article and the status
+     * - The Actions should take responsibility about what to do with the data (Article and status)
+     * - Rules know when to activate any actions
      * @param article
      * @param status
      */
 //    public void claimWarranty(Article article, DeviceStatus status, Optional<LocalDate> sensorFailureDate) {
-    public void claimWarranty(Article article, OperationalStatus status) {
+    public void claimWarranty(
+            Supplier<ClaimingRulesBuilder> rulesBuilderFactory,
+            Article article,
+            DeviceStatus status
+    ) {
 
         LocalDate today = LocalDate.now();
+
+        /**
+         * To claim any warranty applicable to the article at hand, on today´s date, given the state of the article
+         * This chain of operation, produces a dynamic graph of objects which replace the entire hardcoded structure (if else)
+         */
+        rulesBuilderFactory.get()
+                .onMoneyBack(s -> this.claimMoneyBack(article, today))
+                .onClaimExpress(s -> this.claimExpress(article, today))
+                .onClaimExtend(s -> this.claimExtended(article, today, s.getFailureDetectedDate()))
+                .build()
+                .applicableTo(status)
+                .ifPresent(Action::apply);
+
         // Object Oriented code should not depend on reference equality
         // Use equals method instead, whenever there is a semantic definition of equality between objects of some class
 //        if (status == DeviceStatus.ALL_FINE) {
 
         // We can wrap the whole body into a runnable object to hide its arguments
-        Runnable allFineAction = () -> claimMoneyBack(article, today);
+//        Runnable allFineAction = () -> claimMoneyBack(article, today);
 
-        StatusEqualityRule
-                .match( // --> Rule configuration
-                    OperationalStatus.allFine(),
-                    () -> claimMoneyBack(article, today))
-                .orElse(StatusEqualityRule.match( // --> Rule configuration
-                        OperationalStatus.sensorFailed(),
-                        () -> {
-                            claimMoneyBack(article, today);
-                            claimExpress(article, today);
-                        }))
-                .orElse(StatusEqualityRule.match(
-                        OperationalStatus.visiblyDamaged(),
-                        () -> {}))
-                .applicableTo(status)  // --> Filtering
-                .ifPresent(Action::apply);  // --> Execution
+//        StatusEqualityRule
+//                .match( // --> Rule configuration
+//                    OperationalStatus.allFine(),
+//                    () -> claimMoneyBack(article, today))
+//                .orElse(StatusEqualityRule.match( // --> Rule configuration
+//                        OperationalStatus.sensorFailed(),
+//                        () -> {
+//                            claimMoneyBack(article, today);
+//                            claimExpress(article, today);
+//                        }))
+//                .orElse(StatusEqualityRule.match(
+//                        OperationalStatus.visiblyDamaged(),
+//                        () -> {}))
+//                .applicableTo(status)  // --> Filtering
+//                .ifPresent(Action::apply);  // --> Execution
 
 
-        Runnable notOperational = () -> {
-            claimMoneyBack(article, today);
-            claimExpress(article, today);
-        };
-        Runnable sensorFailed = () -> {
-            claimMoneyBack(article, today);
-            claimExtended(article, today, sensorFailureDate);
-        };
-        Runnable notOperationalDamage = () -> claimExpress(article, today);
-        Runnable notOperationalSensorFailed = () -> {
-            claimMoneyBack(article, today);
-            claimExpress(article, today);
-            claimExtended(article, today, sensorFailureDate);
-        };
-        Runnable visiblyDamaged = () -> claimExtended(article, today, sensorFailureDate);
+//        Runnable notOperational = () -> {
+//            claimMoneyBack(article, today);
+//            claimExpress(article, today);
+//        };
+//        Runnable sensorFailed = () -> {
+//            claimMoneyBack(article, today);
+//            claimExtended(article, today, sensorFailureDate);
+//        };
+//        Runnable notOperationalDamage = () -> claimExpress(article, today);
+//        Runnable notOperationalSensorFailed = () -> {
+//            claimMoneyBack(article, today);
+//            claimExpress(article, today);
+//            claimExtended(article, today, sensorFailureDate);
+//        };
+//        Runnable visiblyDamaged = () -> claimExtended(article, today, sensorFailureDate);
 
-        if (status.equals(OperationalStatus.allFine())) {
-            allFineAction.run();
-        } else if (status.equals(OperationalStatus.notOperational())) {
-
-        } else if (status.equals(OperationalStatus.sensorFailed())) {
-
-        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.visiblyDamaged()))) {
-
-        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.sensorFailed()))) {
-
-        } else if (status.equals(OperationalStatus.visiblyDamaged())) {
-            claimExtended(article, today, sensorFailureDate);
-        } else {
-            claimExpress(article, today);
-            claimExtended(article, today, sensorFailureDate);
-        }
+//        if (status.equals(OperationalStatus.allFine())) {
+//            allFineAction.run();
+//        } else if (status.equals(OperationalStatus.notOperational())) {
+//
+//        } else if (status.equals(OperationalStatus.sensorFailed())) {
+//
+//        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.visiblyDamaged()))) {
+//
+//        } else if (status.equals(OperationalStatus.notOperational().add(OperationalStatus.sensorFailed()))) {
+//
+//        } else if (status.equals(OperationalStatus.visiblyDamaged())) {
+//            claimExtended(article, today, sensorFailureDate);
+//        } else {
+//            claimExpress(article, today);
+//            claimExtended(article, today, sensorFailureDate);
+//        }
 
         System.out.println("-----------------");
     }
@@ -125,6 +154,13 @@ public class Demo {
 //                .flatMap(date -> article.getExtendedWarranty().filter(date))
 //                .ifPresent(warranty -> warranty.on(today).claim(this::offerSensorRepair));
 //    }
+
+    /**
+     * The following methods know what to do with the data
+     * @param article
+     * @param today
+     * @param sensorFailureDate
+     */
     private void claimExtended(Article article, LocalDate today, LocalDate sensorFailureDate) {
         article.getExtendedWarranty().filter(sensorFailureDate)
                 .ifPresent(warranty -> warranty.on(today).claim(this::offerSensorRepair));
@@ -173,13 +209,25 @@ public class Demo {
         // I am forced to cover the cases which doesn't apply to my current situation
         // Optional.empty should be encapsulated on an object
         // But with this logic, I have no object and so, that variable is under my responsibility
-        this.claimWarranty(item, OperationalStatus.allFine());
-        this.claimWarranty(item, OperationalStatus.visiblyDamaged());
-        this.claimWarranty(item, OperationalStatus.notOperational());
-        this.claimWarranty(item, OperationalStatus.sensorFailed());
+//        this.claimWarranty(item, OperationalStatus.allFine(), Optional.empty());
+//        this.claimWarranty(item, OperationalStatus.visiblyDamaged(), Optional.empty());
+//        this.claimWarranty(item, OperationalStatus.notOperational(), Optional.empty());
+//        this.claimWarranty(item, OperationalStatus.sensorFailed(), Optional.empty());
+
+        /**
+         * The usage of a factory isolates each run from the others (we could have multiple builders)
+         * Because passing the same build object to be repeatedly consumed, could have negative consequences
+         */
+//        Supplier<ClaimingRulesBuilder> builderFactory = () -> new ExhaustiveRulesBuilder();
+        Supplier<ClaimingRulesBuilder> builderFactory = () -> new PartitioningRulesBuilder();
+        this.claimWarranty(builderFactory, item, DeviceStatus.allFine());
+        this.claimWarranty(builderFactory, item, DeviceStatus.visiblyDamaged());
+        this.claimWarranty(builderFactory, item, DeviceStatus.notOperational());
+        this.claimWarranty(builderFactory, item, DeviceStatus.notOperational().andVisiblyDamaged());
+
 
         LocalDate sensorExamined = LocalDate.now().minus(2, ChronoUnit.DAYS);
-        this.claimWarranty(item, OperationalStatus.sensorFailed(), Optional.of(sensorExamined));
-        this.claimWarranty(item, OperationalStatus.notOperational().add(OperationalStatus.sensorFailed()), Optional.of(sensorExamined));
+        this.claimWarranty(builderFactory, item, DeviceStatus.sensorFailed(sensorExamined));
+        this.claimWarranty(builderFactory, item, DeviceStatus.notOperational().andSensorFailed(sensorExamined));
     }
 }

@@ -10,7 +10,7 @@ public class SensorFailedStatus extends DeviceStatus {
         this.failureDetectedOn = detectedOn;
     }
 
-    public LocalDate getFailureDetectedOn() {
+    public LocalDate getFailureDetectedDate() {
         return failureDetectedOn;
     }
 
