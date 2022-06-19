@@ -21,10 +21,16 @@ public class StraightNumber {
      * We will start by returning a Stream<Integer> - we can see later, if this deserves a class of its own
      * Pure infrastructural code - entirely written in terms of the java programming language
      * All transform specific to java are contained on this method, in this class
+     * However this method is returning a generic stream, which is no good
+     * Because those streams cannot expose the domain specific methods which I need
+     * Instead, we will create and return own own Stream - DigitStream
+     * This code remains low level and highly technical
      */
-    public Stream<Integer> getDigitsFromLeastSignificant() {
+//    public Stream<Integer> getDigitsFromLeastSignificant() {
+    public DigitStream getDigitsFromLeastSignificant() {
         // Separating digits
-        return Stream
+//        return Stream
+        return DigitStream.of(Stream
                 /**
                  * What do to in every iteration
                  * Start from this.value, and apply n -> n / 10 on every iteration
@@ -32,5 +38,6 @@ public class StraightNumber {
                 .iterate(this.value, n -> n / 10)
                 .takeWhile(n -> n > 0) // take the number while the condition is met
                 .map(n -> n % 10) // finite sequence of the least significant digit
+        );
     }
 }

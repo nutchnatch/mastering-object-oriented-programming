@@ -87,38 +87,12 @@ public class Demo {
      */
     private int getControlDigit(StraightNumber number) { //That is how human see the numbers - straight line of digits
         number.getDigitsFromLeastSignificant() // This is what this object shall do for us - behavior
-                .multiplyWith(3, 1) // This is what we are doing with each number
-
-        int sum = 0;
-        boolean isOddPos = true;
-
-        while(number > 0) {
-            /**
-             * Extracts the las significant digit (lsd)
-             * if number = 123456 -> digit = 6
-             */
-            int digit = number % 10;
-            if(isOddPos) {
-                sum += 3 * digit;
-            } else {
-                sum += digit;
-            }
-
-            /**
-             * Extracts the rest of the number, removing tha lsd
-             * if number = 123456 -> number /= 10 => 12345
-             */
-            number /= 10;
-            isOddPos = !isOddPos;
-        }
-
-        int modulo = sum % 11;
-        /**
-         * If modulo has more than one digit
-         */
-        if(modulo > 9) {
-            modulo = 0;
-        }
-        return modulo;
+                /**
+                 * This is what we are doing with each number
+                 * We passes the factors and leave the rest with infrastructural code
+                 */
+                .multiplyWith(3, 1)
+                .module(11)
+                .asDigitOr(0);
     }
 }
