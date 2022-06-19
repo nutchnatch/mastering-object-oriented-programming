@@ -43,8 +43,12 @@ public class Demo {
         Demo demo = new Demo();
         int number = 123456;
 //        int res = demo.getControlDigit(number);
-        int res = demo.getControlDigit2(number);
-        System.out.println(number + "-" +res);
+//        int res = demo.getControlDigit2(number);
+//        System.out.println(number + "-" +res);
+        ControlDigitAlgorithm algorithm = new PonderingModuleAlgorithm(StraightNumber::getDigitsFromLeastSignificant);
+        DocumentNumber documentNumber = new DocumentNumber(new StraightNumber(number), algorithm);
+        System.out.println(documentNumber);
+
     }
 
     private int getControlDigit(int number) {

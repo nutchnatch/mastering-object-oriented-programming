@@ -54,4 +54,9 @@ public class StraightNumber {
     public int asDigitOr(int substitute) {
         return this.value < 10 ? this.value : substitute;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.value);
+    }
 }
