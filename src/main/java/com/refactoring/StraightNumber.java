@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 /**
  * Domain level representation of the number
  * It will hide the low level programming language level representation of a number
+ * Object are the only thor that can help us containing changing requirements
  */
 public class StraightNumber {
     private int value;
@@ -39,5 +40,18 @@ public class StraightNumber {
                 .takeWhile(n -> n > 0) // take the number while the condition is met
                 .map(n -> n % 10) // finite sequence of the least significant digit
         );
+    }
+
+    /**
+     * Domain specific method exposing the modulo operation
+     * @param divisor
+     * @return
+     */
+    public StraightNumber modulo(int divisor) {
+        return new StraightNumber(this.value % divisor);
+    }
+
+    public int asDigitOr(int substitute) {
+        return this.value < 10 ? this.value : substitute;
     }
 }

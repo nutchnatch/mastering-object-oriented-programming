@@ -42,7 +42,8 @@ public class Demo {
     public static void main(String[] args) {
         Demo demo = new Demo();
         int number = 123456;
-        int res = demo.getControlDigit(number);
+//        int res = demo.getControlDigit(number);
+        int res = demo.getControlDigit2(number);
         System.out.println(number + "-" +res);
     }
 
@@ -86,13 +87,17 @@ public class Demo {
      * @return
      */
     private int getControlDigit(StraightNumber number) { //That is how human see the numbers - straight line of digits
-        number.getDigitsFromLeastSignificant() // This is what this object shall do for us - behavior
+        return number.getDigitsFromLeastSignificant() // This is what this object shall do for us - behavior
                 /**
                  * This is what we are doing with each number
                  * We passes the factors and leave the rest with infrastructural code
                  */
                 .multiplyWith(3, 1)
-                .module(11)
+                .modulo(11)
                 .asDigitOr(0);
+    }
+
+    private int getControlDigit2(int number) {
+        return getControlDigit(new StraightNumber(number));
     }
 }
