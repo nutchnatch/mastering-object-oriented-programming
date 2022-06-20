@@ -55,6 +55,10 @@ public class StraightNumber {
         return this.value < 10 ? this.value : substitute;
     }
 
+    public int asDigit(int substitute) {
+        return this.value >= 10 ? this.value : substitute;
+    }
+
     @Override
     public String toString() {
         return String.valueOf(this.value);

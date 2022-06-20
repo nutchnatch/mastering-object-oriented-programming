@@ -9,8 +9,8 @@ public class DocumentNumber {
     private StraightNumber raw;
     private ControlDigitAlgorithm algorithm;
 
-    public DocumentNumber(StraightNumber raw, ControlDigitAlgorithm algorithm) {
-        this.raw = raw;
+    public DocumentNumber(int raw, ControlDigitAlgorithm algorithm) {
+        this.raw = new StraightNumber(raw);
         this.algorithm = algorithm;
     }
 

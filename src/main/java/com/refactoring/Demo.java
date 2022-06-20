@@ -45,9 +45,20 @@ public class Demo {
 //        int res = demo.getControlDigit(number);
 //        int res = demo.getControlDigit2(number);
 //        System.out.println(number + "-" +res);
-        ControlDigitAlgorithm algorithm = new PonderingModuleAlgorithm(StraightNumber::getDigitsFromLeastSignificant);
-        DocumentNumber documentNumber = new DocumentNumber(new StraightNumber(number), algorithm);
-        System.out.println(documentNumber);
+        /**
+         * This is customizable, but the client may not be aware about those arguments
+         * So we need to create an abstract factory
+         */
+//        ControlDigitAlgorithm algorithm = PonderingModuleAlgorithm.multipleDigitsModule(
+//                StraightNumber::getDigitsFromLeastSignificant, 11, 0, new int[]{3,1});
+//        DocumentNumber documentNumber = new DocumentNumber(new StraightNumber(number), algorithm);
+//        System.out.println(documentNumber);
+        /**
+         * Just need to say which kind of algorithm need in each situation
+         */
+        System.out.println(new DocumentNumber(number, ControlDigit.accountingAlgorithm()));
+        System.out.println(new DocumentNumber(number, ControlDigit.salesAlgorithm()));
+        System.out.println(new DocumentNumber(number, ControlDigit.salesAlgorithmMay2017()));
 
     }
 

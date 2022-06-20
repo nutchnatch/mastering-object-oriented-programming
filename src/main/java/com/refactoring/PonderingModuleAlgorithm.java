@@ -7,6 +7,12 @@ public class PonderingModuleAlgorithm implements ControlDigitAlgorithm {
     private int[] factors;
     private Function<StraightNumber, Integer> reduce;
 
+    /**
+     * All data and behaviors are injectable, the algorithm does not know them
+     * @param digitExtractor
+     * @param factors
+     * @param reduce
+     */
     public PonderingModuleAlgorithm(
             Function<StraightNumber, DigitStream> digitExtractor,
             int[] factors, Function<StraightNumber,
@@ -17,18 +23,37 @@ public class PonderingModuleAlgorithm implements ControlDigitAlgorithm {
         this.reduce = reduce;
     }
 
+//    public PonderingModuleAlgorithm(Function<StraightNumber, DigitStream> digitExtractor, int[] factors) {
+//        this.digitExtractor = digitExtractor;
+//        this.factors = factors;
+//    }
+
+//    private PonderingModuleAlgorithm(Function<StraightNumber, DigitStream> digitExtractor) {
+//        this.digitExtractor = digitExtractor;
+//    }
+
     /**
-     * All data and behaviors are injectable, the algorithm does not know them
+     * One of the allowed constructur
      * @param digitExtractor
+     * @param divisor
+     * @param substitute
      * @param factors
+     * @return
      */
-    public PonderingModuleAlgorithm(Function<StraightNumber, DigitStream> digitExtractor, int[] factors) {
-        this.digitExtractor = digitExtractor;
-        this.factors = factors;
+    public static ControlDigitAlgorithm multipleDigitsModule(
+            Function<StraightNumber, DigitStream> digitExtractor,
+            int divisor, int substitute, int[] factors
+    ) {
+        return new PonderingModuleAlgorithm(
+                digitExtractor, factors, n -> n.modulo(divisor).asDigitOr(substitute));
     }
 
-    public PonderingModuleAlgorithm(Function<StraightNumber, DigitStream> digitExtractor) {
-        this.digitExtractor = digitExtractor;
+    public static ControlDigitAlgorithm singleDigitsModule(
+            Function<StraightNumber, DigitStream> digitExtractor,
+            int divisor, int substitute, int[] factors
+    ) {
+        return new PonderingModuleAlgorithm(
+                digitExtractor, factors, n -> n.modulo(divisor).asDigit(substitute));
     }
 
     @Override
